@@ -5,22 +5,35 @@ import * as t from "@onflow/types"
 window.fcl = fcl
 window.t = t
 
-window.addEventListener("FLOW::TX", d =>
+window.addEventListener("FLOW::TX", d => {
   console.log("FLOW::TX", d.detail.delta, d.detail.txId)
-)
+  fcl
+    .tx(d.detail.txId)
+    .subscribe(txStatus => console.log("TX:STATUS", d.detail.txId, txStatus))
+})
+
+window.addEventListener("message", d => {
+  console.log("Harness Message Received", d.data)
+})
+
+// prettier-ignore
+fcl.config()
+  .put("app.detail.title", "Test Harness")
+  .put("app.detail.icon", "https://i.imgur.com/r23Zhvu.png")
+  .put("service.OpenID.scopes", "email email_verified name zoneinfo")
 
 if (true) {
   // prettier-ignore
   fcl.config()
     .put("env", "local")
     .put("accessNode.api", "http://localhost:8080")
+    .put("discovery.wallet", "http://localhost:3000/fcl/authn")
     .put("challenge.handshake", "http://localhost:3000/fcl/authn")
 } else {
   // prettier-ignore
   fcl.config()
     .put("env", "testnet")
     .put("accessNode.api", "https://access-testnet.onflow.org")
-    .put("challenge.handshake", "https://fcl-discovery.onflow.org/testnet/authn")
 }
 
 const script = async () => {
