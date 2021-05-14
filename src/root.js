@@ -72,11 +72,21 @@ const tx = async () => {
     .catch(err => console.error("Oh No!! --", err))
 }
 
+const sign = async () => {
+  try {
+    const signature = await fcl.sign('Message to sign')
+    console.log('Signature', signature)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 const BTNS = [
-  ["Log In", fcl.reauthenticate],
-  ["Log Out", fcl.unauthenticate],
-  ["Script", script],
-  ["Tx", tx],
+  ['Log In', fcl.reauthenticate],
+  ['Log Out', fcl.unauthenticate],
+  ['Script', script],
+  ['Tx', tx],
+  ['Sign', sign],
 ]
 
 export default function Root() {
