@@ -1,19 +1,19 @@
-import {useState, useEffect} from "react"
-import * as fcl from "@onflow/fcl"
-import * as t from "@onflow/types"
+import { useState, useEffect } from 'react'
+import * as fcl from '@onflow/fcl'
+import * as t from '@onflow/types'
 
 window.fcl = fcl
 window.t = t
 
-window.addEventListener("FLOW::TX", d => {
-  console.log("FLOW::TX", d.detail.delta, d.detail.txId)
+window.addEventListener('FLOW::TX', d => {
+  console.log('FLOW::TX', d.detail.delta, d.detail.txId)
   fcl
     .tx(d.detail.txId)
-    .subscribe(txStatus => console.log("TX:STATUS", d.detail.txId, txStatus))
+    .subscribe(txStatus => console.log('TX:STATUS', d.detail.txId, txStatus))
 })
 
-window.addEventListener("message", d => {
-  console.log("Harness Message Received", d.data)
+window.addEventListener('message', d => {
+  console.log('Harness Message Received', d.data)
 })
 
 // prettier-ignore
@@ -47,7 +47,7 @@ const script = async () => {
       fcl.args([fcl.arg(7, t.Int), fcl.arg(9, t.Int)]),
     ])
     .then(fcl.decode)
-    .then(d => console.log("SX", d))
+    .then(d => console.log('SX', d))
 }
 
 const tx = async () => {
@@ -68,17 +68,26 @@ const tx = async () => {
       fcl.limit(15),
     ])
     .then(fcl.decode)
-    .then(d => console.log("TX", d))
-    .catch(err => console.error("Oh No!! --", err))
+    .then(d => console.log('TX', d))
+    .catch(err => console.error('Oh No!! --', err))
 }
 
 const sign = async () => {
   try {
     const signature = await fcl.sign('Message to sign')
     console.log('Signature', signature)
+    showToast()
   } catch (error) {
     console.log(error)
   }
+}
+
+const showToast = () => {
+  var x = document.getElementById('snackbar')
+  x.className = 'show'
+  setTimeout(() => {
+    x.className = x.className.replace('show', '')
+  }, 3000)
 }
 
 const BTNS = [
@@ -104,7 +113,8 @@ export default function Root() {
           </li>
         ))}
       </ul>
-      <pre>{JSON.stringify({currentUser, config}, null, 2)}</pre>
+      <pre>{JSON.stringify({ currentUser, config }, null, 2)}</pre>
+      <div id='snackbar'>Successfully signed the message</div>
     </div>
   )
 }
