@@ -72,21 +72,89 @@ const tx = async () => {
     .catch(err => console.error('Oh No!! --', err))
 }
 
-const sign = async () => {
+const validateSignature = async (cs, message) => {
+  return fcl
+    .send([
+      fcl.script`
+      import Crypto
+
+      pub fun main(
+        message: String,
+        signatures: [String],
+        rawPublicKeys: [String],
+        weights: [UFix64],
+      ): Bool {
+        
+        let keyList = Crypto.KeyList()
+
+        var i = 0
+        for rawPublicKey in rawPublicKeys {
+          keyList.add(
+            PublicKey(
+              publicKey: rawPublicKey.decodeHex(),
+              signatureAlgorithm: SignatureAlgorithm.ECDSA_P256
+            ),
+            hashAlgorithm: HashAlgorithm.SHA3_256,
+            weight: weights[i],
+          )
+          i = i + 1
+        }
+
+        let signatureSet: [Crypto.KeyListSignature] = []
+        var j = 0
+        for signature in signatures {
+          signatureSet.append(
+            Crypto.KeyListSignature(
+              keyIndex: j,
+              signature: signature.decodeHex()
+            )
+          )
+          j = j + 1
+        }
+        
+        let signedData = message.decodeHex()
+        return keyList.isValid(
+          signatureSet: signatureSet,
+          signedData: signedData,
+        )
+      }
+    `,
+      fcl.args([
+        fcl.arg(message, t.String),
+        fcl.arg([cs.signature], t.Array([t.String])),
+        fcl.arg(
+          [`${process.env.REACT_APP_FLOW_ACCOUNT_PUBLIC_KEY}`],
+          t.Array([t.String])
+        ),
+        fcl.arg(['1.0'], t.Array([t.UFix64])),
+      ]),
+    ])
+    .then(fcl.decode)
+    .then(d => {
+      console.log('signature validated', d)
+      d ? showSuccessToast() : alert('Unable to validate signature')
+    })
+}
+
+const signUserMessage = async () => {
+  // "foo", encoded as UTF-8, in hex representation '666f6f'
+  const message = Buffer.from('foo').toString('hex')
+  let signature
   try {
-    const signature = await fcl.sign('Message to sign')
-    console.log('Signature', signature)
-    showToast()
+    signature = await fcl.currentUser().signUserMessage(message)
   } catch (error) {
     console.log(error)
   }
+  signature
+    ? validateSignature(signature, message)
+    : console.log('User declined to sign')
 }
 
-const showToast = () => {
-  var x = document.getElementById('snackbar')
-  x.className = 'show'
+const showSuccessToast = () => {
+  var el = document.getElementById('snackbar')
+  el.className = 'show'
   setTimeout(() => {
-    x.className = x.className.replace('show', '')
+    el.className = el.className.replace('show', '')
   }, 3000)
 }
 
@@ -95,7 +163,7 @@ const BTNS = [
   ['Log Out', fcl.unauthenticate],
   ['Script', script],
   ['Tx', tx],
-  ['Sign', sign],
+  ['Sign', signUserMessage],
 ]
 
 export default function Root() {
