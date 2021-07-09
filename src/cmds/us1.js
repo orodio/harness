@@ -1,12 +1,19 @@
-import {currentUser} from "@onflow/fcl"
-import {yup, nope} from "../util"
+import { currentUser } from "@onflow/fcl";
+import * as fcl from "@onflow/fcl";
+import * as t from "@onflow/types";
+import { yup, nope } from "../util";
 
-export const LABEL = "User Sign 1 (No Verification)"
+const toHexStr = str => {
+  return Buffer.from(str).toString("hex");
+};
+
+export const LABEL = "User Sign";
 export const CMD = async () => {
-  const MSG = "FOO"
+  const MSG = toHexStr("FOO");
   // prettier-ignore
   return currentUser()
-    .signUserMessage(Buffer.from(MSG).toString("hex"))
+    .signUserMessage(MSG)
     .then(yup("US-1"))
+    .then(compSigs => fcl.currentUser().verifyUserSignatures(MSG, compSigs).then(console.log))
     .catch(nope("US-1"))
-}
+};
