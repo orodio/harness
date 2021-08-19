@@ -14,7 +14,7 @@ if (USE_LOCAL) {
   fcl.config()
     .put("env", "local")
     .put("accessNode.api", "http://localhost:8080")
-    .put("discovery.wallet", "http://localhost:3000/fcl/authn")
+    .put("discovery.wallet", "http://localhost:8701/fcl/authn")
 } else {
   // prettier-ignore
   fcl.config()
